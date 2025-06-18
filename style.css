@@ -27,20 +27,20 @@ h1 {
 .message-board {
     border: 1px solid #555;
     background-color: #2f343d;
-    height: 300px;
-    overflow-y: auto;
+    height: 300px; /* Fixed height for scrollable chat */
+    overflow-y: auto; /* Enable scrolling if content overflows */
     margin-bottom: 15px;
     padding: 10px;
     text-align: left;
     border-radius: 4px;
 }
 
-/* Specific styling for different message types */
+/* Styling for different message types within the board */
 .message-board p {
     margin: 5px 0;
     padding: 3px 5px;
     border-radius: 3px;
-    background-color: #4a505b;
+    word-wrap: break-word; /* Ensure long words wrap */
 }
 
 .message-board p.system {
@@ -58,12 +58,12 @@ h1 {
 }
 
 .message-board p.chat {
-    /* Default chat message styling */
+    background-color: #4a505b;
 }
 
 
 input[type="text"] {
-    width: calc(100% - 70px);
+    width: calc(100% - 70px); /* Adjust width to make room for button */
     padding: 10px;
     border: 1px solid #555;
     border-radius: 4px;
