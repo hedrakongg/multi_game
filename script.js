@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- IMPORTANT: REPLACE THIS WITH YOUR RENDER WEBSOCKET SERVER URL ---
     // Example: If your Render Web Service URL is https://my-game-server.onrender.com
     // Then your WebSocket URL will be wss://my-game-server.onrender.com
-    const WS_SERVER_URL = 'wss://multi-game-server.onrender.com'; // Placeholder - CHANGE THIS!
+    const WS_SERVER_URL = 'wss://multi-game-server.onrender.com'; // ASSUMING THIS IS YOUR SERVER URL
     // -------------------------------------------------------------------
 
     let ws;
@@ -22,14 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('WebSocket connection opened:', event);
             connectionStatus.textContent = 'Connected';
             connectionStatus.style.color = '#4CAF50'; // Green
-            appendMessage('You have connected to the server.', 'system');
         };
 
         ws.onmessage = (event) => {
-            // Assuming the server sends plain text messages for this example
-            const messageData = event.data;
+            let messageData;
+            try {
+                messageData = JSON.parse(event.data);
+            } catch (e) {
+                console.error("Failed to parse message from server:", event.data, e);
+                return;
+            }
+
             console.log('Message from server:', messageData);
-            appendMessage(messageData, 'server');
+
+            switch (messageData.type) {
+                case 'system':
+                    appendMessage(messageData.message, 'system');
+                    break;
+                case 'chat':
+                    appendMessage(`${messageData.sender}: ${messageData.message}`, 'chat');
+                    break;
+                default:
+                    console.warn('Unknown message type received from server:', messageData.type);
+            }
         };
 
         ws.onclose = (event) => {
@@ -53,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendMessage(message, type) {
         const p = document.createElement('p');
         p.textContent = message;
-        p.classList.add(type); // Add a class for styling (e.g., 'server', 'system', 'system-error')
+        p.classList.add(type); // Add a class for styling (e.g., 'system', 'chat', 'system-error')
         messagesDiv.appendChild(p);
         // Scroll to the bottom to see the latest message
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -62,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message && ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(message);
-            appendMessage(`You: ${message}`, 'you'); // Display your own message
+            // Send the message as a JSON object with type 'chat'
+            ws.send(JSON.stringify({ type: 'chat', message: message }));
             messageInput.value = ''; // Clear input field
         } else if (ws && ws.readyState !== WebSocket.OPEN) {
             appendMessage('Not connected to server. Please wait or refresh.', 'system-error');
